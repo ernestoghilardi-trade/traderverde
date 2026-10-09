@@ -1,0 +1,56 @@
+name: Scanner Lineas Verdes
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"   # 18:30 Argentina, lunes a viernes (escaneo completo)
+    - cron: "0 15 * * 0,6"    # 12:00 Argentina, sábado y domingo (solo criptos)
+  workflow_dispatch:
+    inputs:
+      accion:
+        description: "Qué hacer"
+        type: choice
+        options: [escanear, acciones, cripto, ver, cartera, historial]
+        default: escanear
+      ticker:
+        description: "Ticker para 'ver' (ej: IBRX o varios: IBRX NU BTC)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scanner
+  cancel-in-progress: false
+
+jobs:
+  scanner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar librerías
+        run: pip install -r requirements.txt
+
+      - name: Correr scanner
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TZ: America/Argentina/Mendoza
+          ACCION: ${{ github.event.inputs.accion || 'auto' }}
+          TICKER: ${{ github.event.inputs.ticker }}
+        run: python scanner_nube.py --accion "$ACCION" --ticker "$TICKER"
+
+      - name: Guardar historial en el repositorio
+        if: always()
+        run: |
+          git config user.name "scanner-bot"
+          git config user.email "scanner-bot@users.noreply.github.com"
+          for f in senales_historial.csv universo_acciones.json; do [ -f "$f" ] && git add "$f"; done
+          git diff --cached --quiet || (git commit -m "Historial $(date +%F)" && git pull --rebase && git push)
