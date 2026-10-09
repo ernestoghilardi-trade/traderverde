@@ -1,0 +1,19 @@
+{
+  "capital": 361,
+  "riesgo_pct": 1.0,
+  "rr": 2.0,
+  "max_posicion_pct": 30.0,
+  "acciones_fraccionadas": true,
+  "comision_min_usd": 1.0,
+  "comision_max_pct": 1.0,
+  "usar_ibkr": false,
+  "ibkr_host": "127.0.0.1",
+  "ibkr_puerto": 7496,
+  "ibkr_client_id": 77,
+  "cartera_manual": [
+    {"ticker": "BBY",  "cantidad": 1, "costo": 88.33},
+    {"ticker": "BMRN", "cantidad": 2, "costo": 55.10},
+    {"ticker": "F",    "cantidad": 1, "costo": 12.24},
+    {"ticker": "GILD", "cantidad": 1, "costo": 147.10}
+  ]
+}
